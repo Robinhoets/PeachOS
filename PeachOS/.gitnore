@@ -24,3 +24,6 @@
 # OS-Specific Metadata
 .DS_Store
 Thumbs.db
+
+# binary
+*.bin
