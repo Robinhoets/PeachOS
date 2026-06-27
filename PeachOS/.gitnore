@@ -1,0 +1,26 @@
+# Object and Assembly Files
+*.o
+*.obj
+*.a
+*.lib
+*.elf
+*.hex
+*.lst
+*.map
+
+# Executables
+*.exe
+*.out
+*.run
+
+# Editor and IDE Backups
+*~
+*.swp
+*.swo
+*.bak
+.vscode/
+.idea/
+
+# OS-Specific Metadata
+.DS_Store
+Thumbs.db
