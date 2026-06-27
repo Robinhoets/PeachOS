@@ -1,9 +1,15 @@
 ORG 0
 BITS 16
+_start:             ; account for flash drive issues. Createa bias.
+    jmp short start
+    nop
 
-jmp 0x7c0:start     ; code segment set to 0x7c0
+times 33 db 0       ; creates a bias of 33 bytes to account for flash drive issues. This is because some flash drives may not properly read the first few bytes of the boot sector, so we add a small offset to ensure that our code is executed correctly.
 
 start:
+    jmp 0x7c0:step2 ; code segment set to 0x7c0
+
+step2:
     cli             ; clear interrupts - disable
 
     mov ax, 0x07C0  ; setting registers to 0x07C0
