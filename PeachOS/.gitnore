@@ -26,4 +26,4 @@
 Thumbs.db
 
 # binary
-*.bin
+./boot/boot.bin
