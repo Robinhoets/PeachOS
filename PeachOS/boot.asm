@@ -9,13 +9,6 @@ times 33 db 0       ; creates a bias of 33 bytes to account for flash drive issu
 start:
     jmp 0x7c0:step2 ; code segment set to 0x7c0
 
-handle_zero:        ; someone does int 0, it will print A to the screen
-    mov ah, 0eh
-    mov al, 'A'
-    mov bx, 0x00
-    int 0x10
-    iret            ; return from interrupt
-
 step2:
     cli             ; clear interrupts - disable
 
@@ -29,15 +22,25 @@ step2:
 
     sti             ; enable interrupts
 
-    ; ss signifies the stack segment. Data segment points at 0x7c00. We need first byte in ram.
-    mov word [ss:0x00], handle_zero ; interupt 0 starts at 0, the first address in memory. Two bytes offset. Two bytes segment.
-    mov word [ss:0x02], 0x7c0
+    mov ah, 2       ; read sector command (AH = 02h)
+    mov al, 1       ; Only one sector to read (AL = number of sectors to read (must be nonzero)
+    mov ch, 0       ; Cylinder is low eight bits (CH = low eight bits of cylinder number)
+    mov cl, 2       ; Start at one for chs; as opposed to LBA. (CL = sector number 1-63 (bits 0-5))
+    mov dh, 0       ; Head number is 0 (DH = head number)
+                    ; dl is set for us (DL = drive number (bit 7 set for hard disk))
+                    ; extra segment already points to 0x07C0
+    mov bx, buffer
+    int 0x13        ; Interupt 13: DISK - READ SECTOR(S) INTO MEMORY
+    jc error
 
-    int 0
-
-
-    mov si, message ; load message in si
+    mov si, buffer
     call print
+
+    jmp $           ; everthing fine loading memory - infinite jump
+
+error:
+    mov si, error_message
+    call print   
     jmp $
 
 print:
@@ -58,7 +61,9 @@ print_char:
     int 0x10
     ret
 
-message: db 'Hello World!', 0
+error_message: db 'Failed to load Sector', 0
 
 times 510-($ - $$) db 0
 dw 0xAA55
+
+buffer:         ; label set here to make sure we don't overwrite our code
