@@ -9,6 +9,13 @@ times 33 db 0       ; creates a bias of 33 bytes to account for flash drive issu
 start:
     jmp 0x7c0:step2 ; code segment set to 0x7c0
 
+handle_zero:        ; someone does int 0, it will print A to the screen
+    mov ah, 0eh
+    mov al, 'A'
+    mov bx, 0x00
+    int 0x10
+    iret            ; return from interrupt
+
 step2:
     cli             ; clear interrupts - disable
 
@@ -20,7 +27,14 @@ step2:
     mov ss, ax
     mov sp, 0x7c00    
 
-    sti             ; enable interrupts 
+    sti             ; enable interrupts
+
+    ; ss signifies the stack segment. Data segment points at 0x7c00. We need first byte in ram.
+    mov word [ss:0x00], handle_zero ; interupt 0 starts at 0, the first address in memory. Two bytes offset. Two bytes segment.
+    mov word [ss:0x02], 0x7c0
+
+    int 0
+
 
     mov si, message ; load message in si
     call print
