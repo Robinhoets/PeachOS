@@ -65,23 +65,78 @@ gdt_descriptor:
     dw gdt_end - gdt_start-1    ; size of descriptor
     dd gdt_start
 
-[BITS 32]           ; all code under here is 32 bit code
-load32:
-    mov ax, DATA_SEG    ; set data registers
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
-    mov ebp, 0x00200000
-    mov esp, ebp    ; set stack pointer to base pointer because now we can access more memory
+[BITS 32]
+load32:             
+    mov eax, 1      ; starting sector to load from (0 is boot sector)
+    mov ecx, 100    ; bc 100 sectors of null loaded in makefile
+    mov edi, 0x0100000  ; address to load sectors into
+    call ata_lba_read   ; talk with drive and load sectors into memory.
+    jmp CODE_SEG:0x0100000  ; now that we've loaded lba, jump to code segment
 
-    ; Enable A20 line
-    in al, 0x92
-    or al, 2
-    out 0x92, al
+; In computing, LBA (Logical Block Addressing) is a standardized, 
+; linear method used by operating systems to locate data on storage devices like 
+; hard disk drives (HDDs) and SSDs. ATA (Advanced Technology Attachment) is the 
+; interface standard that dictates how these storage drives communicate with the 
+; rest of the computer
+ata_lba_read:
+    mov ebx, eax    ; Backup the LBA
+    ; Send the highest 8 bits of the lba to hard disk controller
+    shr eax, 24      ; shift eax 24 bits to right. It will then contain highest 8 bits. 32-24=8
+    or eax, 0xE0    ; selects the master drive
+    mov dx, 0x1F6    ; port expecting 8 bits to be written to
+    out dx, al      ; out talks to bus on motherboard and controller listens
+    ; Finished sending the highest 8 bits of the lba
 
-    jmp $
+    ; Send the total sectors to read
+    mov eax, ecx
+    mov dx, 0x1F2
+    out dx, al
+    ; Finished sending the total sectors to read
+
+    ; Send more bits of the LBA
+    mov eax, ebx    ; restore backup LBA
+    mov dx, 0x1F3
+    out dx, al
+    ; Finished sending more bits of the LBA
+
+    ; Send more bits of the LBA
+    mov dx, 0x1F4
+    mov eax, ebx    ; restore the backup LBA
+    shr eax, 8
+    out dx, al
+    ; Finished sending more bits of the LBA
+
+    ; Send upper 16 bits of the LBA
+    mov dx, 0x1F5
+    mov eax, ebx    ; restore the backup LBA
+    shr eax, 16
+    out dx, al
+    ; Finished sending upper 16 bits of the LBA
+
+    mov dx, 0x1F7
+    mov al, 0x20
+    out dx, al
+
+; Read all sectors into memory
+.next_sector:
+    push ecx
+
+; Checking if we need to read
+.try_again:
+    mov dx, 0x1F7
+    in al, dx
+    test al, 8
+    jz .try_again
+
+    ; We need to read 256 words at a time
+    mov ecx, 256
+    mov dx, 0x1F0
+    rep insw    ; Read word from port. Store it in 0x0100000 (edi). Do this 256 times (512 bytes).
+    pop ecx
+    loop .next_sector
+    ; End of reading sectors into memory
+    ret
+
 
 times 510-($ - $$) db 0
 dw 0xAA55
