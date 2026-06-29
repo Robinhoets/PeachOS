@@ -1,6 +1,7 @@
 [BITS 32]           ; all code under here is 32 bit code
 
 global _start
+global problem
 extern kernel_main
 
 CODE_SEG equ 0x08
@@ -24,5 +25,9 @@ _start:
     call kernel_main   ; call c code
 
     jmp $
+
+; cause issue to see if interrupt works
+problem:
+    int 0
 
 times 512-($ - $$) db 0 ; handle alignment
