@@ -33,6 +33,11 @@ _start:
     out 0x21, al
     ; End - Remap of the master PIC
 
+    ; ----------------------------
+    ; Enable interrupts
+    ; sti
+    ; ----------------------------
+
     call kernel_main   ; call c code
     
     jmp $

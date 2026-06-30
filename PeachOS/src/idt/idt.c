@@ -2,15 +2,40 @@
 #include "config.h"
 #include "memory/memory.h"
 #include "kernel.h"
+#include "io/io.h"
 
 struct idt_desc idt_descriptors[PEACHOS_TOTAL_INTERRUPTS];
 struct idtr_desc idtr_descriptor;
 
 /*
-    Function prototype for loading interrupt description table.
-    Loading done in idt.asm
+    - Section - externs
+    Built in .asm
 */
+
+// Function prototype for loading interrupt description table.
+// Loading done in idt.asm
 extern void idt_load(struct idtr_desc* ptr);
+// Interrupt handler for keyboard
+extern void int21h();
+// There is no interrupt
+extern void no_interrupt();
+
+/*
+    - End Section - externs
+*/
+
+void int21h_handler()
+{
+    print("Keyboard pressed!");
+    // send acknowledgement to hardware port
+    outb(0x20, 0x20);
+}
+
+// if there are no interrtupts
+void no_interrupt_handler()
+{
+    outb(0x20, 0x20);
+}
 
 void idt_zero()
 {
@@ -37,7 +62,14 @@ void idt_init()
     idtr_descriptor.limit = sizeof(idt_descriptors) - 1;
     idtr_descriptor.base = (uint32_t) idt_descriptors;
 
+    for(int i=0; i<PEACHOS_TOTAL_INTERRUPTS; i++)
+    {
+        // call assembly function
+        idt_set(i, no_interrupt);
+    }
+
     idt_set(0, idt_zero);
+    idt_set(0x20, int21h);      // cal handle for keyboard interrupt
 
     // Load the interrupt description table
     // pass in address of table
