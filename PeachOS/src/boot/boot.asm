@@ -1,29 +1,36 @@
+;  --- Bootloader ---
+;   Load kernel into memory
+;   Switches processor into 32-bit protected mode
+;   Then execute kernel
+; -------------------
 ORG 0x7c00
-BITS 16
+BITS 16                     ; bootloader only uses 16 bits
 
 CODE_SEG equ gdt_code - gdt_start   ; offset 0x8 for gdt code
 DATA_SEG equ gdt_data - gdt_start   ; offset 0x10 for gdt code
 
-_start:             ; account for flash drive issues. Createa bias.
+_start:                     ; account for flash drive issues. Createa bias.
     jmp short start
     nop
 
-times 33 db 0       ; creates a bias of 33 bytes to account for flash drive issues. This is because some flash drives may not properly read the first few bytes of the boot sector, so we add a small offset to ensure that our code is executed correctly.
-
+; creates a bias of 33 bytes to account for flash drive issues. 
+; This is because some flash drives may not properly read the first few bytes 
+; of the boot sector, so we add a small offset to ensure that our code is executed correctly.
+times 33 db 0      
 start:
-    jmp 0:step2     ; code segment set to 0x7c0
+    jmp 0:step2             ; code segment set to 0x7c0
 
 step2:
-    cli             ; clear interrupts - disable
+    cli                     ; clear interrupts - disable. We don't want them to interrupt setting the registers
 
-    mov ax, 0x00    ; setting registers to 0x07C0
+    mov ax, 0x00            ; setting registers to 0x07C0
     mov ds, ax
     mov es, ax      
 
     mov ss, ax
     mov sp, 0x7c00    
 
-    sti             ; enable interrupts
+    sti                     ; enable interrupts
 
 .load_protected:
     cli
@@ -137,6 +144,7 @@ ata_lba_read:
     ; End of reading sectors into memory
     ret
 
-
-times 510-($ - $$) db 0
-dw 0xAA55
+; Set boot signature.
+; Bios looks for this signature to know to use this file too boot.
+times 510-($ - $$) db 0     ; Fill 510 bytes of data. ex) if we use 500, it will pad 10.
+dw 0xAA55                   ; Little endian (0x55AA)

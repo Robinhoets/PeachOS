@@ -7,8 +7,6 @@ extern no_interrupt_handler
 global idt_load
 global int21h
 global no_interrupt
-
-; ------------ testing ----------------
 global enable_interrupts
 global disable_interrupts
 
@@ -19,8 +17,6 @@ enable_interrupts:
 disable_interrupts:
     cli
     ret
-; ----------------------------------------
-
 
 idt_load:
     push ebp            ; push base pointer
