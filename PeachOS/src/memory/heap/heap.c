@@ -211,5 +211,5 @@ void* heap_malloc(struct heap* heap, size_t size)
 
 void heap_free(struct heap* heap, void* ptr)
 {
-    return 0;
+    
 }
