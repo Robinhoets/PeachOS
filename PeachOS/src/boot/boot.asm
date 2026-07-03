@@ -3,7 +3,7 @@
 ;   Switches processor into 32-bit protected mode
 ;   Then execute kernel
 ; -------------------
-ORG 0x7c00
+ORG 0x7c00                  ; location of first instruction ((0x7c0*16)+0) = 0x7c00
 BITS 16                     ; bootloader only uses 16 bits
 
 CODE_SEG equ gdt_code - gdt_start   ; offset 0x8 for gdt code
@@ -23,12 +23,12 @@ start:
 step2:
     cli                     ; clear interrupts - disable. We don't want them to interrupt setting the registers
 
-    mov ax, 0x00            ; setting registers to 0x07C0
-    mov ds, ax
-    mov es, ax      
+    mov ax, 0x00            ; setting registers to 0x7C0
+    mov ds, ax              ; mov 0x7c0 into data segment register
+    mov es, ax              ; mov 0x7c0 into extra segment register
 
-    mov ss, ax
-    mov sp, 0x7c00    
+    mov ss, ax              ; mov ax into stack segment
+    mov sp, 0x7c00          ; stack pointer
 
     sti                     ; enable interrupts
 
