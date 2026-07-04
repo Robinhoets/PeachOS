@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 void* kmalloc(size_t size);
+void* kzalloc(size_t size);
 void kheap_init();
 void kfree(void* ptr);
 
