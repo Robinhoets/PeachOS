@@ -1,5 +1,6 @@
 #include "paging.h"
 #include "memory/heap/kheap.h"
+#include "status.h"
 
 void paging_load_directory(uint32_t* directory);
 
@@ -50,4 +51,72 @@ void paging_switch(uint32_t* directory)
 uint32_t* paging_4gb_chunk_get_directory(struct paging_4gb_chunk* chunk)
 {
     return chunk->directory_entry;
+}
+
+/*
+    Purpose: Make sure paging is aligned. Heap sizes are 4096 which will work directly
+                if we make sure blocks aligned.
+    Parameter addr:
+    Return: True if page is aligned. Else, fasle
+*/
+bool paging_is_aligned(void* addr)
+{
+    return ((uint32_t) addr % PAGING_PAGE_SIZE) == 0;
+}
+
+/*
+    Purpose: Take a virtual address, calculate which directory index in the directory
+                entry table and which in the page table are responsible for this
+                virtual address.
+    Parameter virtual_address: The adress given to determine directory and page table.
+    Parameter directory_index_out: The directory.
+    Parameter table_index_out: The page table.
+    Return: 
+*/
+int paging_get_indexes(void* virtual_address, uint32_t* directory_index_out, uint32_t* table_index_out)
+{
+    // response variable
+    int res = 0;
+    if(!paging_is_aligned(virtual_address))
+    {
+        res = -EINVARG;
+        goto out;
+    }
+
+    *directory_index_out = ((uint32_t)virtual_address / (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE));
+    *table_index_out = ((uint32_t) virtual_address % (PAGING_TOTAL_ENTRIES_PER_TABLE * PAGING_PAGE_SIZE) / PAGING_PAGE_SIZE);
+
+out:
+    return res;
+}
+
+/*
+    Purpose: Set a page.
+    Parameter directory: Directory of page to be added.
+    Parameter virt: Virtual address of page to be added.
+    Parameter val: Value to be added.
+    Return: 
+*/
+int paging_set(uint32_t* directory, void* virt, uint32_t val)
+{
+    if(!paging_is_aligned(virt))
+    {
+        return -EINVARG;
+    }
+    uint32_t directory_index = 0;
+    uint32_t table_index = 0;
+    int res = paging_get_indexes(virt, &directory_index, &table_index);
+    if(res < 0)
+    {
+        return res; // error and return
+    }
+
+    // get page directory entry - pointer to page table
+    uint32_t entry = directory[directory_index];
+    // extract only the address (remove flags)
+    uint32_t* table = (uint32_t*)(entry & 0xfffff000);
+    table[table_index] = val;
+
+    return 0;
+
 }
