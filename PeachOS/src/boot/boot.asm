@@ -10,12 +10,17 @@ CODE_SEG equ gdt_code - gdt_start   ; offset 0x8 for gdt code
 DATA_SEG equ gdt_data - gdt_start   ; offset 0x10 for gdt code
 
 _start:                     ; account for flash drive issues. Createa bias.
-    jmp short start
+    jmp short start         ; unconditional jump - code after accounts for bias (times 33 db 0)
     nop
 
 ; creates a bias of 33 bytes to account for flash drive issues. 
 ; This is because some flash drives may not properly read the first few bytes 
 ; of the boot sector, so we add a small offset to ensure that our code is executed correctly.
+; BPB (BIOS Parameter Block) https://wiki.osdev.org/FAT
+; Basically the usb is FAT (File Allocation Table)
+; It creates a Boot Record on the usb that contains code and data mixed together.
+; In total, it is 33 bytes. We create a gap of 33 bytes for where our code starts 
+; so in the case the usb uses this, bios doesn't corrupt our code.
 times 33 db 0      
 start:
     jmp 0:step2             ; code segment set to 0x7c0
@@ -84,7 +89,7 @@ load32:
 ; linear method used by operating systems to locate data on storage devices like 
 ; hard disk drives (HDDs) and SSDs. ATA (Advanced Technology Attachment) is the 
 ; interface standard that dictates how these storage drives communicate with the 
-; rest of the computer
+; rest of the computer.
 ata_lba_read:
     mov ebx, eax    ; Backup the LBA
     ; Send the highest 8 bits of the lba to hard disk controller
