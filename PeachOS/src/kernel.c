@@ -95,6 +95,9 @@ void kernel_main()
     // Initialize the heap
     kheap_init();
 
+    // Search and initialize the disks
+    disk_search_and_init();
+
     // Initialize the interrupt descriptor table
     idt_init();
 
@@ -106,12 +109,8 @@ void kernel_main()
     // Switch to kernel paging chunk
     paging_switch(paging_4gb_chunk_get_directory(kernel_chunk));
 
-
     // Enable Paging
     enable_paging();
-
-    char buf[512];
-    disk_read_sector(0, 1, buf);
 
     // Enable the system interrupts
     enable_interrupts();

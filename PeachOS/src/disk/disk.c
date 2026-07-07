@@ -6,6 +6,12 @@
  ******************************************************************************/
 
  #include "io/io.h"                     // Access to outb and inb instructions.
+ #include "disk.h"
+ #include "memory/memory.h"
+ #include "config.h"
+ #include "status.h"
+
+struct disk disk;                       // Represents primary hard disk.
 
  /*
     Purpose:
@@ -44,4 +50,45 @@ int disk_read_sector(int lba, int total, void* buf)
     }
 
     return 0;
+}
+
+/*
+    Purpose: Search for disks and initializing them.
+    *** not searching currently - abstracted out for later implementation ***
+*/
+void disk_search_and_init()
+{
+    memset(&disk, 0, sizeof(disk));
+    disk.type = PEACHOS_DISK_TYPE_REAL;
+    disk.sector_size = PEACHOS_SECTOR_SIZE;
+}
+
+/*
+    Purpose: Get the disk.
+    Parameter index: Index of disk to get.
+    Return: Address of disk desired.
+    *** not implemented to be dynamic. Just an abstract at the moment. ***
+*/
+struct disk* disk_get(int index)
+{
+    if(index != 0)
+        return 0;
+
+    return &disk;
+}
+
+/*
+    Purpose: Read the block for the disk.
+    Parameter idisk: 
+    Parameter lba: Logical Block Address we want to read from.
+    Parameter total: Total number of blocks to read from lba.
+    Parameter buf: Points to buffer where we load data to.
+*/
+int disk_read_block(struct disk* idisk, unsigned int lba, int total, void* buf)
+{
+    if(idisk != &disk)
+    {
+        return -EIO;
+    }
+    return disk_read_sector(lba, total, buf);
 }
