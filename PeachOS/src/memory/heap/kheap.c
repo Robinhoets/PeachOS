@@ -32,7 +32,7 @@ void* kmalloc(size_t size)
 }
 
 /*
-    Malloc and set everything to null.
+    Purpose: Malloc and set everything to null.
 */
 void* kzalloc(size_t size)
 {
