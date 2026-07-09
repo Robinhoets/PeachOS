@@ -8,4 +8,4 @@ int strnlen(const char* ptr, int max);
 bool isdigit(char c);
 int tonumericdigit(char c);
 
-#endif STRING_H
+#endif
