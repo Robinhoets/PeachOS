@@ -9,19 +9,33 @@ BITS 16                     ; bootloader only uses 16 bits
 CODE_SEG equ gdt_code - gdt_start   ; offset 0x8 for gdt code
 DATA_SEG equ gdt_data - gdt_start   ; offset 0x10 for gdt code
 
-_start:                     ; account for flash drive issues. Createa bias.
-    jmp short start         ; unconditional jump - code after accounts for bias (times 33 db 0)
-    nop
 
-; creates a bias of 33 bytes to account for flash drive issues. 
-; This is because some flash drives may not properly read the first few bytes 
-; of the boot sector, so we add a small offset to ensure that our code is executed correctly.
-; BPB (BIOS Parameter Block) https://wiki.osdev.org/FAT
-; Basically the usb is FAT (File Allocation Table)
-; It creates a Boot Record on the usb that contains code and data mixed together.
-; In total, it is 33 bytes. We create a gap of 33 bytes for where our code starts 
-; so in the case the usb uses this, bios doesn't corrupt our code.
-times 33 db 0      
+jmp short start         ; unconditional jump 
+nop
+
+; FAT16 Header
+OEMIdentifier           db 'PEACHOS '       ; Must be 8 bytes - Name of the formatting OS
+BytesPerSector          dw 0x200            ; This value is the number of bytes in each physical sector.
+SectorsPerCluster       db 0x80
+ReservedSectors         dw 200              ; The value is used to calculate the location for the first sector containing the FAT.
+FATCopies               db 0x02             ; The usage of two copies are to prevent data loss if one or part of one FAT copy is corrupted.
+RootDirEntries          dw 0x40
+NumSectors              dw 0x00
+MediaType               db 0xF8             ; F8 = fixed disk
+SectorsPerFat           dw 0x100            
+SectorsPerTrack         dw 0x20             ; This field represents the multiple of the max. Head and Sector value used when the volume was formatted. The field itself is used to check if the LBA to CHS translation has changed, since the formatting. And for calculating the correct Cylinder, Head and Sector values for the translation algorithm.
+NumberOfHeads           dw 0x40
+HiddenSectors           dd 0x00             ; When the volume is on a media that is partitioned, this value contains the number of sectors preceeding the first sector of the volume
+SectorsBig              dd 0x773594
+
+; Extended BPB (Dos 4.0)
+DriveNumber             db 0x80
+WinNTBit                db 0x00
+Signature               db 0x29
+VolumeID                dd 0xD105
+VolumeIDString          db 'PEACHOS BOO'
+SystemIDString          db 'FAT16   '
+
 start:
     jmp 0:step2             ; code segment set to 0x7c0
 
