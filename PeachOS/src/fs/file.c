@@ -3,6 +3,7 @@
 #include "memory/memory.h"
 #include "status.h"
 #include "memory/heap/kheap.h"
+#include "fat/fat16.h"
 #include "kernel.h"
 
 struct filesystem* filesystems[PEACHOS_MAX_FILESYSTEMS];
@@ -49,7 +50,7 @@ void fs_insert_filesystem(struct filesystem* filesystem)
 */
 static void fs_static_load()
 {
-    //fs_insert_filesystem(fat16_init());
+    fs_insert_filesystem(fat16_init());
 }
 
 /*

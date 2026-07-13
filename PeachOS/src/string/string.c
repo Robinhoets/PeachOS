@@ -36,6 +36,28 @@ int strnlen(const char* ptr, int max)
 }
 
 /*
+    Purpose: Copy one addresses string to another address.
+    Parameter dest: Destination address of string.
+    Parameter src: Source address of string.
+    Return:
+*/
+char* strcpy(char* dest, const char* src)
+{
+    char* res = dest;
+    while(*src != 0)
+    {
+        *dest = *src;
+        src += 1;
+        dest += 1;
+    }
+
+    // append null terminator
+    *dest = 0x00;
+
+    return res;
+}
+
+/*
     Purpose: Check if character is a digit.
     Parameter c: Character to check.
     Return: True if digit passed (decimal 48-57 maps 0-9), false if out of bounds.
