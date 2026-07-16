@@ -127,7 +127,7 @@ struct filesystem* fs_resolve(struct disk* disk)
     for(int i=0; i< PEACHOS_MAX_FILESYSTEMS; i++)
     {
         // Ensure filesystem there and not null pointer
-        // Then call internal resolve function
+        // Then call internal resolve function - fat16 driver.
         if(filesystems[i] != 0 && filesystems[i]->resolve(disk) == 0)
         {
             fs = filesystems[i];
