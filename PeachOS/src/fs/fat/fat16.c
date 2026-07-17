@@ -357,7 +357,7 @@ out:
 }
 
 /*
-    Purpose: Open a file.
+    Purpose: Open a file. Locate the correct file
     Parameter disk:
     Parameter path:
     Parameter mode:
