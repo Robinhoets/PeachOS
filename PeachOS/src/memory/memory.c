@@ -47,3 +47,21 @@ int memcmp(void* s1, void* s2, int count)
 
     return 0;
 }
+
+/*
+    Purpose: Copy memory from source to destination.
+    Parameter dest: Memory location to copy to.
+    Parameter src: Memory location to copy from.
+    Parameter len: Total length of memory to copy.
+    Return: void.
+*/
+void* memcpy(void* dest, void* src, int len)
+{
+    char *d = dest;
+    char *s = src;
+    while(len--)
+    {
+        *d++ = *s++;
+    }
+    return dest;
+}

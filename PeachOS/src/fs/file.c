@@ -237,5 +237,5 @@ out:
     if(res < 0)
         res = 0;
 
-    return -EIO;
+    return res;
 }

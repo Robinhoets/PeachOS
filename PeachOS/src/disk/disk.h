@@ -19,6 +19,8 @@ struct disk
     struct filesystem* filesystem;
 
     // private data of the filesystem
+    // What kind of filesystem? fat16? fat16, or any other, will have a specific signature that can be 'AND-ED' together with
+    // a FAT_FILE_SUBDIRECTORY for example to determine if it is indeed a fat16 type system
     void* fs_private;
 };
 
