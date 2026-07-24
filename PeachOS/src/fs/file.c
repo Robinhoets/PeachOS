@@ -241,6 +241,28 @@ out:
 }
 
 /*
+    Purpose: Seek to any point in a file. Changes where file pointer is in that file.
+    Parameter fd: Struct that holds the file item and position.
+    Parameter offset: Where to start seeking from.
+    Parameter whence:
+    Return:
+*/
+int fseek(int fd, int offset, FILE_SEEK_MODE whence)
+{
+    int res = 0;
+    struct file_descriptor* desc = file_get_descriptor(fd);
+    if(!desc)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+    res = desc->filesystem->seek(desc->private, offset, whence);
+out:
+    return res;
+}
+
+/*
     Purpose: 
     Parameter ptr:
     Parameter size:
