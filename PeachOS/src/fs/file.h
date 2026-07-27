@@ -39,6 +39,8 @@ typedef void*(*FS_OPEN_FUNCTION)(struct disk* disk, struct path_part* path, FILE
 typedef int (*FS_READ_FUNCTION)(struct disk* disk, void* private, uint32_t size, uint32_t nmemb, char* out);
 // resolve - is this valid disk
 typedef int (*FS_RESOLVE_FUNCTION)(struct disk* disk);
+// close
+typedef int (*FS_CLOSE_FUNCTION)(void* private);
 // seek
 typedef int (*FS_SEEK_FUNCTION)(void* private, uint32_t offseet, FILE_SEEK_MODE seek_mode);
 // stat
@@ -58,6 +60,7 @@ struct filesystem
     FS_READ_FUNCTION read;
     FS_SEEK_FUNCTION seek;
     FS_STAT_FUNCTION stat;
+    FS_CLOSE_FUNCTION close;
 
     char name[20];
 };
@@ -80,6 +83,7 @@ int fopen(const char* filename, const char* mode_str);
 int fseek(int fd, int offset, FILE_SEEK_MODE whence);
 int fread(void* ptr, uint32_t size, uint32_t nmemb, int fd);
 int fstat(int fd, struct file_stat* stat);
+int fclose(int fd);
 
 void f_insert_filesystem(struct filesystem* filesystem);
 struct filesystem* fs_resolve(struct disk* disk);

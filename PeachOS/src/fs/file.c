@@ -262,6 +262,27 @@ out:
 }
 
 /*
+    Purpose: VFS to close a handle.
+    Parameter:
+    Return: Result of the pointer function.
+*/
+int fclose(int fd)
+{
+    int res = 0;
+    struct file_descriptor* desc = file_get_descriptor(fd);
+    if(!desc)
+    {
+        res = -EIO;
+        goto out;
+    }
+
+    res = desc->filesystem->close(desc->private);
+
+out:
+    return res;
+}
+
+/*
     Purpose: Seek to any point in a file. Changes where file pointer is in that file.
     Parameter fd: Struct that holds the file item and position.
     Parameter offset: Where to start seeking from.
