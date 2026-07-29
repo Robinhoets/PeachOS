@@ -6,3 +6,9 @@
 ## Future changes
 - Additional filesystem support
 - Drawio graphics for files/functions
+
+
+## Diagrams and Documentation
+Every folder (that contains a file) will have at least one diagram like the one below. This will explain graphically what the file does.
+
+![kernel.c](./imgs/kernel-c.drawio.png)
