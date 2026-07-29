@@ -74,6 +74,17 @@ void fs_init()
 }
 
 /*
+    Purpose: Free the generic file descriptor. The specific file system handles freeing its own descriptor.
+    Parameter desc: The descriptor to be freed.
+    Return: void
+*/
+static void file_free_descriptor(struct file_descriptor* desc)
+{
+    file_descriptors[desc->index-1] = 0x00;
+    kfree(desc);
+}
+
+/*
     Purpose: Create file descriptors.
     Parameter desc_out: Location of descriptor in memory. Set to desc if free descriptor.
     Return: -ENOMEM if no discriptors free. 0 if found descriptor.
@@ -277,6 +288,10 @@ int fclose(int fd)
     }
 
     res = desc->filesystem->close(desc->private);
+    if(res == PEACHOS_ALL_OK)
+    {
+        file_free_descriptor(desc);
+    }
 
 out:
     return res;

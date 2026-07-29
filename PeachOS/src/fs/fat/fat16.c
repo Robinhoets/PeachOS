@@ -154,6 +154,7 @@ void * fat16_open(struct disk* disk, struct path_part* path, FILE_MODE mode);
 int fat16_read(struct disk* disk, void* descriptor, uint32_t size, uint32_t nmemb, char* out_ptr);
 int fat16_seek(void* private, uint32_t offset, FILE_SEEK_MODE seek_mode);
 int fat16_stat(struct disk* disk, void* private, struct file_stat* stat);
+int fat16_close(void* private);
 
 struct filesystem fat16_fs = 
 {
@@ -162,7 +163,8 @@ struct filesystem fat16_fs =
     .open = fat16_open,
     .read = fat16_read,
     .seek = fat16_seek,
-    .stat = fat16_stat
+    .stat = fat16_stat,
+    .close = fat16_close
 };
 
 /*
@@ -851,6 +853,28 @@ void * fat16_open(struct disk* disk, struct path_part* path, FILE_MODE mode)
     descriptor->pos = 0;
     // Returns descriptor private data to file.c (fopen)
     return descriptor;
+}
+
+/*
+    Purpose: Free memory that was created with a file descriptor.
+    Parameter desc: The descriptor to be freed.
+    Return: void. Frees memory.
+*/
+static void fat16_free_file_descriptor(struct fat_file_descriptor* desc)
+{
+    fat16_fat_item_free(desc->item);
+    kfree(desc);
+}
+
+/*
+    Purpose: FAT16 implementation of closing a file.
+    Parameter private: 
+    Return:
+*/
+int fat16_close(void* private)
+{
+    fat16_free_file_descriptor((struct fat_file_descriptor*) private);
+    return 0;
 }
 
 /*
